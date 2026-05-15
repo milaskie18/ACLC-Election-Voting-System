@@ -7,6 +7,16 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Import the new routes
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const voteRoutes = require('./routes/voteRoutes');
+
+// Mount the routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/votes', voteRoutes);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
