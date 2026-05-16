@@ -10,6 +10,9 @@ const userRoutes = require('./routes/userRoutes');
 const voteRoutes = require('./routes/voteRoutes');
 const candidateRoutes = require('./routes/candidateRoutes');
 
+// MUST HAVE THESE TWO LINES:
+const bcrypt = require('bcryptjs');
+const User = require('./models/User');
 
 
 // Connect to Database
