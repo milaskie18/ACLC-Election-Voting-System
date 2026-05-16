@@ -10,6 +10,30 @@ const userRoutes = require('./routes/userRoutes');
 const voteRoutes = require('./routes/voteRoutes');
 const candidateRoutes = require('./routes/candidateRoutes');
 
+// --- TEMPORARY EMERGENCY ADMIN SEEDER ---
+app.get("/api/seed-emergency-admin", async (req, res) => {
+    try {
+        const adminExists = await User.findOne({ studentId: 'admin' });
+        if (adminExists) {
+            return res.send("Admin already exists! Go log in.");
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('admin123', salt);
+
+        await User.create({
+            studentId: 'admin',
+            lastName: 'Administrator',
+            password: hashedPassword,
+            approvalStatus: 'approved'
+        });
+
+        res.send("✅ SUCCESS! Admin account created. You can now log in with admin / admin123");
+    } catch (error) {
+        res.status(500).send("Error: " + error.message);
+    }
+});
+
 // Connect to Database
 connectDB();
 

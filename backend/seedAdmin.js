@@ -6,7 +6,8 @@ const connectDB = require('./db');
 const seedAdmin = async () => {
     try {
         // Connect to your local MongoDB
-        await connectDB();
+        
+        await mongoose.connect('mongodb+srv://jamila:jamila@cluster0.fwlrvoj.mongodb.net/?appName=Cluster0');
 
         // Check if admin already exists
         const adminExists = await User.findOne({ studentId: 'admin' });
