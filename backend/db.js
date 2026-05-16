@@ -1,15 +1,15 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const mongoURL = "mongodb://localhost:27017/myapp";
 const connectDB = async () => {
     try {
-        await mongoose.connect(mongoURL);
-        console.log('MongoDB connected');
-    } catch (err) {
-        console.error("MongoDB connection error:", err.message);
+        // This tells Mongoose to use your Render Environment Variable, 
+        // or fall back to your localhost database if you are testing on your computer.
+        const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/aclc_voting');
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+        console.error(`Error: ${error.message}`);
         process.exit(1);
     }
-
 };
 
 module.exports = connectDB;

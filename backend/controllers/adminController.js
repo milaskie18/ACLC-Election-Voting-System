@@ -1,68 +1,102 @@
-    // @desc    Get all active candidates (Tally)
-// @route   GET /api/admin/candidates
-const loadTally = async (req, res) => {
+const Candidate = require('../models/Candidate');
+
+// 1. Fetch Approved candidates OR legacy candidates (no status) for the main tally
+const getCandidates = async (req, res) => {
     try {
-        // Only fetch candidates that are NOT archived
-        const candidates = await Candidate.find({ isArchived: false }).sort({ position: 1 });
+        const candidates = await Candidate.find({ 
+            $or: [
+                { status: 'Approved' },
+                { status: { $exists: false } } // Catches your older test data!
+            ],
+            isArchived: false 
+        });
         res.status(200).json(candidates);
     } catch (error) {
-        console.error("Error loading tally:", error);
-        res.status(500).json({ message: 'Server error while loading candidates.' });
+        console.error("Tally Fetch Error:", error);
+        res.status(500).json({ message: 'Failed to fetch tally' });
     }
 };
 
-// @desc    Edit/Update a candidate
-// @route   PUT /api/admin/candidates/:id
+// 2. Fetch only Pending candidates for the Approvals tab
+const getPendingCandidates = async (req, res) => {
+    try {
+        const pending = await Candidate.find({ 
+            status: 'Pending', 
+            isArchived: false 
+        });
+        res.status(200).json(pending);
+    } catch (error) {
+        console.error("Pending Fetch Error:", error);
+        res.status(500).json({ message: 'Failed to fetch pending candidates' });
+    }
+};
+
+// 3. Approve Candidate
+const approveCandidate = async (req, res) => {
+    try {
+        await Candidate.findByIdAndUpdate(req.params.id, { status: 'Approved' });
+        res.status(200).json({ message: 'Candidate approved successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to approve candidate' });
+    }
+};
+
+// 4. Reject Candidate
+const rejectCandidate = async (req, res) => {
+    try {
+        await Candidate.findByIdAndUpdate(req.params.id, { status: 'Rejected' });
+        res.status(200).json({ message: 'Candidate rejected successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to reject candidate' });
+    }
+};
+
+// --- RESTORED MISSING FUNCTIONS ---
+
+// 5. Add Candidate (Admin bypasses the pending status)
+const addCandidate = async (req, res) => {
+    try {
+        const { name, position, partylist, level } = req.body;
+        const newCandidate = await Candidate.create({
+            name,
+            position,
+            partylist,
+            level,
+            votes: 0,
+            status: 'Approved' // Skips the approval queue!
+        });
+        res.status(201).json(newCandidate);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to add candidate' });
+    }
+};
+
+// 6. Edit Candidate
 const editCandidate = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { name, position, partylist, level } = req.body;
-
-        const updatedCandidate = await Candidate.findByIdAndUpdate(
-            id,
-            { name, position, partylist, level },
-            { new: true, runValidators: true }
-        );
-
-        if (!updatedCandidate) {
-            return res.status(404).json({ message: 'Candidate not found.' });
-        }
-
-        res.status(200).json({ message: 'Candidate updated!', candidate: updatedCandidate });
+        const updated = await Candidate.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.status(200).json(updated);
     } catch (error) {
-        console.error("Error updating candidate:", error);
-        res.status(500).json({ message: 'Server error while updating candidate.' });
+        res.status(500).json({ message: 'Failed to edit candidate' });
     }
 };
 
-// @desc    Soft Delete a candidate (Archive)
-// @route   DELETE /api/admin/candidates/:id
+// 7. Delete Candidate
 const deleteCandidate = async (req, res) => {
     try {
-        const { id } = req.params;
-        
-        // Instead of permanently deleting, we set isArchived to true
-        const archivedCandidate = await Candidate.findByIdAndUpdate(
-            id,
-            { isArchived: true },
-            { new: true }
-        );
-
-        if (!archivedCandidate) {
-            return res.status(404).json({ message: 'Candidate not found.' });
-        }
-
-        res.status(200).json({ message: 'Candidate archived successfully.' });
+        await Candidate.findByIdAndDelete(req.params.id);
+        res.status(200).json({ message: 'Candidate deleted' });
     } catch (error) {
-        console.error("Error archiving candidate:", error);
-        res.status(500).json({ message: 'Server error while deleting candidate.' });
+        res.status(500).json({ message: 'Failed to delete candidate' });
     }
 };
 
-// Don't forget to export the new functions at the bottom!
 module.exports = {
+    getCandidates,
+    getPendingCandidates,
+    approveCandidate,
+    rejectCandidate,
     addCandidate,
-    loadTally,
     editCandidate,
     deleteCandidate
 };

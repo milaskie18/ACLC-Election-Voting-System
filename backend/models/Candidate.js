@@ -25,6 +25,13 @@ const candidateSchema = new mongoose.Schema({
     isArchived: {
         type: Boolean,
         default: false
+    },
+
+    // Application status field
+    status: { 
+        type: String, 
+        enum: ['Pending', 'Approved', 'Rejected'], 
+        default: 'Pending' 
     }
 }, { timestamps: true });
 
