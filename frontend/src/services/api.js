@@ -1,19 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5000/api',
-    headers: {
-        'Content-Type': 'application/json'
-    }
+    // UPDATE THIS LINE EXACTLY:
+    baseURL: 'https://aclc-election-voting-system.onrender.com/api'
 });
 
-// Response interceptor for standard error handling
-api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        console.error("API Error:", error.response?.data || error.message);
-        return Promise.reject(error);
-    }
-);
-
-export default api;
+// Leave the rest of your interceptors/code exactly as they are
